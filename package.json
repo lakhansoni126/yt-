@@ -1,0 +1,23 @@
+{
+  "name": "yt-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lakhansoni126/yt-.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lakhansoni126/yt-/issues"
+  },
+  "homepage": "https://github.com/lakhansoni126/yt-#readme",
+  "dependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
