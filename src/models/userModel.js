@@ -74,20 +74,6 @@ userSchema.methods.generateAccessToken = function () {
     }
   );
 };
-// userSchema.methods.genrateAccessToken = function () {
-//   return jwt.sign(
-//     {
-//       _id: this._id,
-//       email: this.email,
-//       username: this.username,
-//       fullname: this.fullname,
-//     },
-//     process.env.JWT,
-//     {
-//       expiresIn: process.env.JWT_EXPIRY,
-//     }
-//   );
-// };
 
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
@@ -100,15 +86,5 @@ userSchema.methods.generateRefreshToken = function () {
     }
   );
 };
-// userSchema.methods.genraterefreshToken = function () {
-//   return jwt.sign(
-//     {
-//       _id: this._id,
-//     },
-//     process.env.REFRESH_JWT,
-//     {
-//       expiresIn: process.env.REFRESH_JWT_EXPIRY,
-//     }
-//   );
-// };
+
 export const User = mongoose.model("user", userSchema);
