@@ -149,7 +149,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
-  const clientRefreshToken = req.cookies.refreshToken || req.body.re;
+  const clientRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
   if (!clientRefreshToken) {
     throw new apiError(401, "unauthorized");
@@ -218,7 +218,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findByIdAndUpdate(
-    req.user._id,
+    req.user?._id,
     {
       $set: {
         fullname,

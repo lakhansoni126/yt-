@@ -38,9 +38,9 @@ router.route("/refreshtoken").post(refreshAccessToken);
 
 router.route("/changepassword").post(verifyJWT, changePassword);
 
-router.route("/currentuser").post(getcUser);
+router.route("/currentuser").post(verifyJWT, getcUser);
 
-router.route("/updatedetails").patch(updateAccountDetails);
+router.route("/updatedetails").patch(verifyJWT, updateAccountDetails);
 
 router
   .route("/updateavatar")
@@ -48,7 +48,7 @@ router
 
 router
   .route("/updatecover")
-  .patch(verifyJWT, upload.single(coverimg), updateCover);
+  .patch(verifyJWT, upload.single("coverimg"), updateCover);
 
 router.route("/c/:username").get(verifyJWT, getChannelProfile);
 

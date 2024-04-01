@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
-const videoSchema = new Schma(
+const videoSchema = new Schema(
   {
     videofile: {
       type: String,
@@ -28,7 +28,6 @@ const videoSchema = new Schma(
     },
     ispublished: {
       type: Boolean,
-      required: true,
     },
     owner: {
       type: Schema.Types.ObjectId,
