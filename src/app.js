@@ -17,11 +17,14 @@ app.use(cookieParser());
 
 //routes
 import userRouter from "./routes/userRoutes.js";
-
+import playlistRouter from "./routes/playlistRoutes.js";
+import subscriptionRouter from "./routes/subscriptionRoutes.js";
 import videoRouter from "./routes/videoRoute.js";
 
 //routes declaration
 app.use("/api/users", userRouter);
 app.use("/api/video", videoRouter);
+app.use("/api/playlist", playlistRouter);
+app.use("/api/subscription", subscriptionRouter);
 
 export { app };
