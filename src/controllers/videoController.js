@@ -1,4 +1,4 @@
-import mongoose, { isValidObjectId } from "mongoose";
+import { isValidObjectId } from "mongoose";
 import { Video } from "../models/videoModel.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
@@ -80,20 +80,18 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, videos, "Videos retrieved successfully.."));
 });
 
-const ObjectId = mongoose.Types.ObjectId;
-
 const getVideoById = asyncHandler(async (req, res) => {
-  const videoId = req.params;
+  const videoid = req.params.videoId.toString();
 
-  console.log("shadd", videoId);
+  console.log(videoid);
   try {
-    // if (!ObjectId.isValid(videoId)) {
-    //   return res.status(400).json({
-    //     error: "Invalid Video ID",
-    //   });
-    // }
+    if (!isValidObjectId(videoid)) {
+      return res.status(400).json({
+        error: "Invalid Video ID",
+      });
+    }
 
-    const video = await Video.findById(videoId.id);
+    const video = await Video.findById(videoid);
 
     if (!video) {
       throw new apiError(404, "Video not found");
@@ -107,7 +105,7 @@ const getVideoById = asyncHandler(async (req, res) => {
 });
 
 const deleteVideo = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
+  const videoId = req.params.videoId.toString();
 
   if (!isValidObjectId(videoId)) {
     return res.status(400).json({
@@ -118,7 +116,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const video = await Video.findById(videoId);
+    const video = await Video.findByIdAndDelete(videoId);
 
     if (!video) {
       throw new apiError(404, "Video not found");
@@ -135,8 +133,6 @@ const deleteVideo = asyncHandler(async (req, res) => {
         );
     }
 
-    await video.remove();
-
     return res
       .status(200)
       .json(new apiResponse(200, {}, "Video deleted successfully"));
@@ -147,8 +143,10 @@ const deleteVideo = asyncHandler(async (req, res) => {
 });
 
 const updateVideo = asyncHandler(async (req, res) => {
-  const { videoId, title, description, thumbnail, userId } = req.params;
-
+  const videoId = req.params.videoId.toString();
+  const userId = req.user.id;
+  const { title, description, thumbnail } = req.body;
+  console.log(req.params);
   try {
     if (!isValidObjectId(videoId)) {
       return res.status(400).json({
@@ -162,19 +160,18 @@ const updateVideo = asyncHandler(async (req, res) => {
       throw new apiError(404, "Video not found");
     }
 
-    // Check if the authenticated user is the owner of the video
     if (video.owner.toString() !== userId) {
       return res
         .status(403)
         .json(
-          new apiResponse(
+          new apiError(
             403,
             "Unauthorized: You are not the owner of this video!"
           )
         );
     }
 
-    const thumbnailUrl = await uploadOnCloudinary(thumbnail);
+    const thumbnailUrl = await uploadOnCloud(thumbnail);
 
     video.title = title;
     video.description = description;
@@ -192,10 +189,10 @@ const updateVideo = asyncHandler(async (req, res) => {
 });
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
-  const { videoId } = req.params;
+  const videoId = req.params.videoId.toString();
 
   try {
-    const video = await Video.findById(videoId);
+    const video = await Video.findByIdAndUpdate(videoId);
 
     if (!video) {
       return res.status(404).json({
@@ -204,7 +201,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
       });
     }
 
-    video.isPublished = !video.isPublished;
+    video.ispublished = !video.ispublished;
 
     await video.save();
 

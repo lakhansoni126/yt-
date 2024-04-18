@@ -1,58 +1,97 @@
 import mongoose, { isValidObjectId } from "mongoose";
-import { User } from "../models/userModel.js";
 import { Subscription } from "../models/subscriptionModel.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import { User } from "../models/userModel.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
-  console.log(channelId);
-  if (!channelId) {
-    throw new apiError(400, "Not found channel id");
+
+  if (!isValidObjectId(channelId)) {
+    throw new apiError(401, "Invalid channel Id");
   }
 
-  const channel = await User.findById(channelId);
-  if (!channel) {
-    throw new apiError(404, "Channel does not exits");
+  if (!req.user?._id) {
+    throw new apiError(401, "Unauthorized user");
   }
 
-  const user = await User.findById(req.user?._id);
-  if (!user) {
-    throw new apiError(404, "User not founded");
-  }
+  const subscriberId = req.user?._id;
 
-  const subscriber = await Subscription.find({
-    subscriber: isValidObjectId(req.user?._id),
-    channel: isValidObjectId(channelId),
+  const isSubscribed = await Subscription.findOne({
+    channel: channelId,
+    subscriber: subscriberId,
   });
-
-  let toggle;
-  if (!subscriber) {
-    toggle = await Subscription.create({
-      subscriber: req?.user.id,
-      channel: channelId,
-    });
-    if (!toggle) {
-      throw new apiError(400, "Something went wrong");
-    }
-  } else {
-    toggle = await Subscription.findByIdAndDelete(subscriber._id);
+  var response;
+  try {
+    response = isSubscribed
+      ? await Subscription.deleteOne({
+          channel: channelId,
+          subscriber: subscriberId,
+        })
+      : await Subscription.create({
+          channel: channelId,
+          subscriber: subscriberId,
+        });
+  } catch (error) {
+    console.log("toggleSubscription error ::", error);
+    throw new apiError(
+      500,
+      error?.message || "Internal server error in toggleSubscription"
+    );
   }
 
-  res
+  return res
     .status(200)
-    .json(new apiResponse(200, toggle, "Successfully toggled the state"));
+    .json(
+      new apiResponse(
+        200,
+        response,
+        isSubscribed === null
+          ? "Subscribed successfully"
+          : "Unsubscribed successfully"
+      )
+    );
 });
 
-// controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
-  const { channelId } = req.params;
+  const channelId = req.params.subscriberId.toString();
+
+  if (!isValidObjectId(channelId)) {
+    throw new apiError(400, "Invalid channelId");
+  }
+
+  const channels = await Subscription.find({ channel: channelId }).populate(
+    "channel"
+  );
+  if (!channels || channels.length === 0) {
+    throw new apiError(404, "No subscribers found for the channel");
+  }
+
+  return res
+    .status(201)
+    .json(new apiResponse(200, channels, "channels  retrieved successfully.."));
 });
 
-// controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-  const { subscriberId } = req.params;
+  const subscriberlId = req.params.channelId.toString();
+
+  if (!isValidObjectId(subscriberlId)) {
+    throw new apiError(400, "Invalid subscriberlId");
+  }
+
+  const subscribers = await Subscription.find({
+    channel: subscriberlId,
+  }).populate("subscriber");
+  if (!subscribers || subscribers.length === 0) {
+    throw new apiError(404, "No subscribers found for the channel");
+  }
+
+  return res
+    .status(201)
+    .json(
+      new apiResponse(200, subscribers, "subscribers  retrieved successfully..")
+    );
 });
 
 export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
